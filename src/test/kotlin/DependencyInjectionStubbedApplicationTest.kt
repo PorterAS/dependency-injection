@@ -7,12 +7,10 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 
 /**
- * This class tests the entire application with injected dependencies. That might be a bad idea, but
- * it really depends on your domain and what you need to be certain of. At least this setup shows
- * that it does not have to be slow. Any bootup issues are usually the frameworks and checks and scans
- * they do when starting up.
+ * This class shows almost the same ting as the other one. But it has it's repository stubbed,
+ * so you can write fast efficient tests that avoids hitting some shared state or slow database.
  */
-class DependencyInjectionApplicationTest {
+class DependencyInjectionStubbedApplicationTest {
 
     companion object {
         private lateinit var serverUrl: String
@@ -21,7 +19,10 @@ class DependencyInjectionApplicationTest {
         @BeforeAll
         @JvmStatic
         fun setupServer() {
-            app = DependencyInjectionApplicationContext(loadConfig(true)).create()
+            app = DependencyInjectionApplicationContext(
+                    loadConfig(true),
+                    businessRepository = BusinessRepositoryStub()
+            ).create()
             serverUrl = app.start()
         }
 
@@ -35,7 +36,7 @@ class DependencyInjectionApplicationTest {
     @Test
     fun testThatTheApplicationIsAcceptingRequestsAtTheBaseUrl() {
         val response = Unirest.get(serverUrl).asString()
-        assertThat(response.body, Is(equalTo("Hello World!")))
+        assertThat(response.body, Is(equalTo("Hello World Stubbed!")))
     }
 
 }

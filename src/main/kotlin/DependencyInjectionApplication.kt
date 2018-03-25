@@ -1,4 +1,4 @@
-import spark.Spark
+import spark.Service
 import java.io.FileInputStream
 import java.io.FileNotFoundException
 import java.util.*
@@ -27,13 +27,21 @@ data class DependencyInjectionApplicationConfig(
 /**
  * The class responsible for wiring it all together
  */
-class DependencyInjectionApplicationContext(private val configuration: DependencyInjectionApplicationConfig) {
+class DependencyInjectionApplicationContext(
+        private val configuration: DependencyInjectionApplicationConfig,
+        private val businessRepository: BusinessRepository? = null) {
+
     fun create(): DependencyInjectionApplication {
-        // Create DataSource
+        // Create DataSource(s)
+
         // Create any services and put inject any repositories
+        val businessService = BusinessServiceImpl(businessRepository ?: BusinessRepositoryImpl())
 
         // Create the main application and inject whatever you've created above.
-        return DependencyInjectionApplication(configuration.port)
+        return DependencyInjectionApplication(
+                configuration.port,
+                businessService
+        )
     }
 
 }
@@ -42,21 +50,23 @@ class DependencyInjectionApplicationContext(private val configuration: Dependenc
  * The main application. Try to keep any wiring / startup logic out of this. If/Else at the top level should only be
  * related to business decisons.
  */
-class DependencyInjectionApplication(private val port: Int) {
+class DependencyInjectionApplication(private val port: Int, private val businessService: BusinessService) {
+
+    val sparkServer = Service.ignite()
+
     fun start(): String {
-        Spark.port(port)
+        sparkServer.port(port)
 
-        Spark.get("*") { req, res -> "Hello World!" }
+        sparkServer.get("*") { req, res -> businessService.getData("id") }
 
-        Spark.awaitInitialization()
+        sparkServer.awaitInitialization()
 
-        return "http://localhost:${Spark.port()}"
+        return "http://localhost:${sparkServer.port()}"
     }
 
     fun stop() {
-        Spark.stop()
+        sparkServer.stop()
     }
-
 
 }
 
