@@ -52,14 +52,16 @@ class DependencyInjectionApplicationContext(
  */
 class DependencyInjectionApplication(private val port: Int, private val businessService: BusinessService) {
 
-    val sparkServer = Service.ignite()
+    private val sparkServer = Service.ignite()!!
 
     fun start(): String {
-        sparkServer.port(port)
+        with(sparkServer) {
+            port(port)
 
-        sparkServer.get("*") { req, res -> businessService.getData("id") }
+            get("*") { _, _ -> businessService.getData("id") }
 
-        sparkServer.awaitInitialization()
+            awaitInitialization()
+        }
 
         return "http://localhost:${sparkServer.port()}"
     }
