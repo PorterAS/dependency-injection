@@ -4,7 +4,7 @@ This is a small application acting as an illustration to a blog post. It uses:
 - Spark Framework to serve HTTP requests
 - JUnit 5 for testing
 
-I'll update repo with link to article when I publish.
+You can read more about the reasoning and setup here: https://medium.com/porterbuddy/rolling-your-own-dependency-injection-7045f8b64403
 
 # Building and running
 
