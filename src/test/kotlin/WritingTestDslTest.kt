@@ -38,16 +38,15 @@ class TestRequestInfo(private val testSetup: TestSetup) {
     lateinit var toAddress: String
 
     infix fun assertValidDeliveryTimes(function: () -> Pair<LocalTime, LocalTime>) {
-        MatcherAssert.assertThat(businessFunction(testSetup.time, fromAddress, toAddress), IsEqual(function()))
+        MatcherAssert.assertThat(generateDeliveryTimesForRequest(testSetup.time, fromAddress, toAddress), IsEqual(function()))
     }
 
 }
 
 
 /**
- * This should really be the production code that you're running
+ * This should really be the production code that you're testing
  */
-fun businessFunction(time: String, fromAddress: String, toAddress: String): Pair<LocalTime, LocalTime> {
-    Clock.fi
+fun generateDeliveryTimesForRequest(time: String, fromAddress: String, toAddress: String): Pair<LocalTime, LocalTime> {
     return LocalTime.of(10, 0) to LocalTime.of(13, 0)
 }
