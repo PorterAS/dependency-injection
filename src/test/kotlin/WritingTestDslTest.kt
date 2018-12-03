@@ -9,14 +9,14 @@ class WritingTestDslTest {
     fun testThatDeliveryTimesIsForTheNextWholeHour() {
         testConfig {
             time = "09:34"
-        } whenAvailabilityInformation {
+        } whenAvailabilityRequestIsMade {
             fromAddress = "Keysers Gate 13, 0186 Oslo, Norway"
             toAddress = "Bjarertveien 17, 0579 Oslo, Norway"
         } assertValidDeliveryTimes {
             Pair(LocalTime.of(10, 0), LocalTime.of(13, 0))
         }
     }
-
+    
 }
 
 fun testConfig(setupFunction: TestSetup.() -> Unit): TestSetup {
@@ -27,7 +27,7 @@ fun testConfig(setupFunction: TestSetup.() -> Unit): TestSetup {
 class TestSetup {
     lateinit var time: String
 
-    infix fun whenAvailabilityInformation(function: TestRequestInfo.() -> Unit): TestRequestInfo {
+    infix fun whenAvailabilityRequestIsMade(function: TestRequestInfo.() -> Unit): TestRequestInfo {
         return TestRequestInfo(this).apply(function)
     }
 
