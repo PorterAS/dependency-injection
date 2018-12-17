@@ -7,19 +7,19 @@ class WritingTestDslTest {
 
     @Test
     fun testThatDeliveryTimesIsForTheNextWholeHour() {
-        testConfig {
+        testCaseSetup {
             time = "09:34"
-        } whenAvailabilityRequestIsMade {
+        } whenCustomerAsksForDeliveryTimesBetweenAddresses {
             fromAddress = "Keysers Gate 13, 0186 Oslo, Norway"
             toAddress = "Bjarertveien 17, 0579 Oslo, Norway"
-        } assertValidDeliveryTimes {
+        } assertThatCustomerIsGivenProposalForDeliveryTime {
             Pair(LocalTime.of(10, 0), LocalTime.of(13, 0))
         }
     }
-    
+
 }
 
-fun testConfig(setupFunction: TestSetup.() -> Unit): TestSetup {
+fun testCaseSetup(setupFunction: TestSetup.() -> Unit): TestSetup {
     return TestSetup().apply(setupFunction)
 }
 
@@ -27,7 +27,7 @@ fun testConfig(setupFunction: TestSetup.() -> Unit): TestSetup {
 class TestSetup {
     lateinit var time: String
 
-    infix fun whenAvailabilityRequestIsMade(function: TestRequestInfo.() -> Unit): TestRequestInfo {
+    infix fun whenCustomerAsksForDeliveryTimesBetweenAddresses(function: TestRequestInfo.() -> Unit): TestRequestInfo {
         return TestRequestInfo(this).apply(function)
     }
 
@@ -37,7 +37,7 @@ class TestRequestInfo(private val testSetup: TestSetup) {
     lateinit var fromAddress: String
     lateinit var toAddress: String
 
-    infix fun assertValidDeliveryTimes(function: () -> Pair<LocalTime, LocalTime>) {
+    infix fun assertThatCustomerIsGivenProposalForDeliveryTime(function: () -> Pair<LocalTime, LocalTime>) {
         MatcherAssert.assertThat(generateDeliveryTimesForRequest(testSetup.time, fromAddress, toAddress), IsEqual(function()))
     }
 
