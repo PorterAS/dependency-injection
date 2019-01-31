@@ -6,6 +6,8 @@ This is a small application acting as an illustration to a blog post. It uses:
 
 You can read more about the reasoning and setup here: https://medium.com/porterbuddy/rolling-your-own-dependency-injection-7045f8b64403
 
+This repo has also been extended to encompass some other examples of code. To see all our blogposts go to https://medium.com/porerbuddy
+
 # Building and running
 
 To build a ShadowJAR as a single binary distributable do:
