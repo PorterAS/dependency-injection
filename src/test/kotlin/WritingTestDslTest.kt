@@ -37,8 +37,17 @@ class TestRequestInfo(private val testSetup: TestSetup) {
     lateinit var fromAddress: String
     lateinit var toAddress: String
 
-    infix fun assertThatCustomerIsGivenProposalForDeliveryTime(function: () -> Pair<LocalTime, LocalTime>) {
-        MatcherAssert.assertThat(generateDeliveryTimesForRequest(testSetup.time, fromAddress, toAddress), IsEqual(function()))
+    infix fun assertThatCustomerIsGivenProposalForDeliveryTime(
+            function: () -> Pair<LocalTime, LocalTime>
+    ) {
+        MatcherAssert.assertThat(
+                generateDeliveryTimesForRequest(
+                        testSetup.time,
+                        fromAddress,
+                        toAddress
+                ),
+                IsEqual(function())
+        )
     }
 
 }
