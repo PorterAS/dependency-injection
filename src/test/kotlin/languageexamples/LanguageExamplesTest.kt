@@ -17,11 +17,11 @@ class LanguageExamplesTest {
         val value: String = "Hello"
         // value = "Hello2" // Does not compile
         var mutableValue = "Hello"
-        mutableValue = "Hello2"
+        mutableValue = "Hello2" // Var so mutable
 
-        val value2: String? = null
-        // val slice: String = value2.slice(4..50) // Does not compile
-        // val slice: String = value2!!.slice(4..50) // RuntimeException
+        val nullableValue: String? = null
+        // val slice: String = nullableValue.slice(4..50) // Does not compile
+        // val slice: String = nullableValue!!.slice(4..50) // RuntimeException
 
         val slice = value.slice(1..2) // Extension method to String from Kotlin
         assertThat(slice, equalTo("el"))
