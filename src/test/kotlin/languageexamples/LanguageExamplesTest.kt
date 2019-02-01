@@ -25,8 +25,8 @@ class LanguageExamplesTest {
         // val slice: String = nullableValue.slice(4..50) // Does not compile
         // val slice: String = nullableValue!!.slice(4..50) // RuntimeException
 
-        val slice = value.slice(1..2) // Extension method to String from Kotlin
-        assertThat(slice, equalTo("el"))
+        val slice = value.slice(1..3) // Extension method to String from Kotlin
+        assertThat(slice, equalTo("ell"))
     }
 
     @Test
@@ -74,9 +74,11 @@ class LanguageExamplesTest {
                 PlayerStats("Martin", 9),
                 PlayerStats("Kristian", 20)
         )
+        val totalGamesPlayedWithOut = stats.map { it.gamesPlayed }.sum()
         val totalGamesPlayed = stats.sumByLong { it.gamesPlayed } // Kotlin doesn't have a sumBy for Longs, see above for implementation
 
         assertThat(totalGamesPlayed, equalTo(42L))
+        assertThat(totalGamesPlayedWithOut, equalTo(42L))
     }
 
     @Test
