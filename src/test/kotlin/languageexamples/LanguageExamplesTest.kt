@@ -101,5 +101,3 @@ class LanguageExamplesTest {
         val myMapOfNamesAndJustNumbers: Map<String, Int> = myList.map { it.name to it.children }.toMap()
     }
 }
-
-
