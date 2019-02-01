@@ -2,6 +2,8 @@ package languageexamples
 
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 /**
@@ -46,9 +48,13 @@ class LanguageExamplesTest {
         )
 
         assertThat(me.name, equalTo("Anders Sveen"))
-        assertThat(me.address, equalTo(someone.address)) // Different objects, equals through data class
         assertThat(someone.name, equalTo("Someone Sveen"))
         assertThat(someoneAtDifferentAddress.address.postCode, equalTo("1111"))
+        assertThat(me.address, equalTo(someone.address)) // Different objects, equals through data class
+        assertTrue(me.address == someone.address)
+        assertTrue(me.address === someone.address)
+        assertFalse(me.address == someoneAtDifferentAddress.address) // Equality
+        assertFalse(me.address === someoneAtDifferentAddress.address)
     }
 
     @Test
