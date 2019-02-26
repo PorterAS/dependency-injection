@@ -60,6 +60,8 @@ dependencies {
     compile "com.sparkjava:spark-kotlin:1.0.0-alpha"
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}"
     compile "org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}"
+    compile "io.vavr:vavr-kotlin:0.10.0"
+
 
     testImplementation 'com.natpryce:hamkrest:1.7.0.0'
     testCompile 'org.junit.jupiter:junit-jupiter-api:5.4.0'

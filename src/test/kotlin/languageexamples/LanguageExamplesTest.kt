@@ -2,6 +2,8 @@ package languageexamples
 
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
+import io.vavr.control.Try
+import io.vavr.kotlin.Try
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -13,6 +15,8 @@ import org.junit.jupiter.api.Test
  *
  */
 class LanguageExamplesTest {
+    data class Address(val streetName: String, val streetNumber: String, val postCode: String, val country: String)
+    data class Person(val name: String, val address: Address, val phoneNumber: String)
 
     @Test
     fun testNullabilityValAndExtensionMethods() {
@@ -30,10 +34,23 @@ class LanguageExamplesTest {
     }
 
     @Test
-    fun testDataClassesAndConstruction() {
-        data class Address(val streetName: String, val streetNumber: String, val postCode: String, val country: String)
-        data class Person(val name: String, val address: Address, val phoneNumber: String)
+    fun testCollectionMethods() {
+        val myList = listOf("one", "two", "three")
 
+        assertThat(myList.filter { it.startsWith("t") }.size, equalTo(2))
+        assertThat(myList.first { listItem -> listItem.startsWith("t") }, equalTo("two"))
+
+        val myMap = mapOf<String, Long>(
+                "Hello" to 2L,
+                "Yes" to 100L
+        )
+
+        assertThat(myMap["Yes"], equalTo(100L))
+    }
+
+
+    @Test
+    fun testDataClassesAndConstruction() {
         val me = Person(
                 "Anders Sveen",
                 Address("Mystreet", "64", "0547", "Norway"),
@@ -86,18 +103,46 @@ class LanguageExamplesTest {
         data class FamilyStatus(val name: String, val children: Int)
 
         val myNumber: Int = "1234".let { it.toInt() }
-        val myList = listOf(FamilyStatus("John", 3), FamilyStatus("Sam", 7), FamilyStatus("Anna", 2))
+        val myList = listOf(
+                FamilyStatus("John", 3),
+                FamilyStatus("Sam", 7),
+                FamilyStatus("Anna", 2)
+        )
         assertThat(
-                myList
-                        .sortedBy { it.name }
-                        .last { it.children > 5 }
-                        .name,
+                myList.sortedBy { it.name }.last { it.children > 5 }.name,
                 equalTo("Sam")
         )
-        assertThat(myList.single { it.name == "John" }, equalTo(FamilyStatus("John", 3)))
+        assertThat(myList.single { it.children > 5 }, equalTo(FamilyStatus("Sam", 7)))
 
-        val myListOfJustNames: List<String> = myList.map { it.name }
-        val myMapOfNames: Map<String, FamilyStatus> = myList.associateBy { it.name }
         val myMapOfNamesAndJustNumbers: Map<String, Int> = myList.map { it.name to it.children }.toMap()
+        val myListOfJustNames: List<String> = myList.map { it.name }
+
+        val myMapOfNames: Map<String, FamilyStatus> = myList.associateBy { it.name }
+        assertThat(myMapOfNames["John"], equalTo(FamilyStatus("John", 3)))
+    }
+
+    @Test
+    fun testOptions() {
+        fun fetchAddress(addressId: String): Try<Address> {
+            return Try {
+                when (addressId) {
+                    "1" -> Address("Streetname", "1", "8723", "Norway")
+                    else -> throw IllegalStateException("No address")
+                }
+            }
+        }
+
+        val addressFetch = fetchAddress("1")
+        addressFetch.map {
+            // assign to domain
+        }.onFailure { exception ->
+            println("Could not find address (Try) $exception")
+        }
+
+        addressFetch.toOption().map {
+            // assign to domain
+        }.onEmpty {
+            println("Could not find address (Option)")
+        }
     }
 }
