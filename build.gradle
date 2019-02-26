@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        kotlinVersion = '1.3.20'
+        kotlinVersion = '1.3.21'
     }
     repositories {
         mavenCentral()
@@ -11,7 +11,6 @@ buildscript {
         classpath "org.jetbrains.kotlin:kotlin-allopen:${kotlinVersion}"
         classpath "com.github.jengelman.gradle.plugins:shadow:4.0.4"
         classpath "com.github.ben-manes:gradle-versions-plugin:0.20.0"
-        classpath 'org.junit.platform:junit-platform-gradle-plugin:1.2.0'
     }
 }
 
@@ -19,7 +18,6 @@ apply plugin: 'com.github.ben-manes.versions'
 apply plugin: 'com.github.johnrengelman.shadow'
 apply plugin: 'kotlin'
 apply plugin: 'eclipse'
-apply plugin: 'org.junit.platform.gradle.plugin'
 
 
 repositories {
@@ -41,6 +39,10 @@ shadowJar {
     version = null
 }
 
+test {
+    useJUnitPlatform()
+}
+
 jar {
     manifest {
         attributes 'Main-Class': 'DependencyInjectionApplicationKt'
@@ -60,8 +62,8 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}"
 
     testImplementation 'com.natpryce:hamkrest:1.7.0.0'
-    testCompile 'org.junit.jupiter:junit-jupiter-api:5.3.1'
-    testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
+    testCompile 'org.junit.jupiter:junit-jupiter-api:5.4.0'
+    testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.4.0'
     testCompile "com.mashape.unirest:unirest-java:1.4.9"
     testCompile "commons-logging:commons-logging:1.2"
     testCompile "org.hamcrest:hamcrest-core:2.1"
