@@ -2,6 +2,7 @@ package languageexamples
 
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
+import io.vavr.control.Option
 import io.vavr.control.Try
 import io.vavr.control.Validation
 import io.vavr.kotlin.Try
@@ -178,7 +179,7 @@ class LanguageExamplesTest {
         val accessNames = listOf(Role.ADMIN_ROLE)
 
         // First assign role to user
-        if (username == "fullaccess") {
+        val creationResult = if (username == "fullaccess") {
             Validation.valid<ValidationError, Role>(Role.ADMIN_ROLE)
         } else {
             Validation.invalid(ValidationError("No access", "user"))
@@ -190,6 +191,16 @@ class LanguageExamplesTest {
                 Validation.invalid(ValidationError("Not allowed", "user.role"))
             }
         }
+
+        creationResult.map {
+            // Status 200
+            // Convert to JSON
+        }.mapError {
+            // Status 422
+            // Convert to JSON
+        }
+
+
     }
 }
 
