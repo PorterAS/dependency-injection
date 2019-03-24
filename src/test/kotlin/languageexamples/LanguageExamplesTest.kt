@@ -3,7 +3,9 @@ package languageexamples
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
 import io.vavr.control.Try
+import io.vavr.control.Validation
 import io.vavr.kotlin.Try
+import io.vavr.kotlin.option
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -67,11 +69,12 @@ class LanguageExamplesTest {
         assertThat(me.name, equalTo("Anders Sveen"))
         assertThat(someone.name, equalTo("Someone Sveen"))
         assertThat(someoneAtDifferentAddress.address.postCode, equalTo("1111"))
+
         assertThat(me.address, equalTo(someone.address)) // Different objects, equals through data class
-        assertTrue(me.address == someone.address)
-        assertTrue(me.address === someone.address)
+        assertTrue(me.address == someone.address) // Equality
+        assertTrue(me.address === someone.address) // Memory equality
         assertFalse(me.address == someoneAtDifferentAddress.address) // Equality
-        assertFalse(me.address === someoneAtDifferentAddress.address)
+        assertFalse(me.address === someoneAtDifferentAddress.address) // Memory equality
     }
 
     @Test
@@ -145,4 +148,48 @@ class LanguageExamplesTest {
             println("Could not find address (Option)")
         }
     }
+
+    @Test
+    fun testReturnValuesOfBlocks() {
+        val enteredAddress: String? = null
+
+        val addressForStorage = if (enteredAddress != null) {
+            enteredAddress
+        } else {
+            "Karl Johan 1, Oslo, Norway"
+        }
+        assertThat(addressForStorage, equalTo("Karl Johan 1, Oslo, Norway"))
+
+        val addressForStorage2 = enteredAddress.option().getOrElse { "Karl Johan 1, Oslo, Norway" }
+
+        val displayTitle = when (addressForStorage) {
+            "Karl Johan 1, Oslo, Norway" -> "Slottet"
+            else -> enteredAddress
+        }
+        assertThat(displayTitle, equalTo("Slottet"))
+    }
+
+    enum class Role { ADMIN_ROLE }
+    data class ValidationError(val message: String, val path: String)
+
+    @Test
+    fun testValidationsChaining() {
+        val username = "fullaccess"
+        val accessNames = listOf(Role.ADMIN_ROLE)
+
+        // First assign role to user
+        if (username == "fullaccess") {
+            Validation.valid<ValidationError, Role>(Role.ADMIN_ROLE)
+        } else {
+            Validation.invalid(ValidationError("No access", "user"))
+        }.flatMap { role ->
+            if (accessNames.contains(role)) {
+                // val newId = orderService.createNew(json)
+                Validation.valid<ValidationError, String>("newStoredId")
+            } else {
+                Validation.invalid(ValidationError("Not allowed", "user.role"))
+            }
+        }
+    }
 }
+
