@@ -1,6 +1,7 @@
 package languageexamples
 
 import com.natpryce.hamkrest.assertion.assertThat
+import com.natpryce.hamkrest.containsSubstring
 import com.natpryce.hamkrest.equalTo
 import io.vavr.control.Option
 import io.vavr.control.Try
@@ -31,9 +32,30 @@ class LanguageExamplesTest {
         val nullableValue: String? = null
         // val slice: String = nullableValue.slice(4..50) // Does not compile
         // val slice: String = nullableValue!!.slice(4..50) // RuntimeException
+        val nullSlice = nullableValue?.slice(4..50)
 
         val slice = value.slice(1..3) // Extension method to String from Kotlin
         assertThat(slice, equalTo("ell"))
+    }
+
+    @Test
+    fun testOneLineIf() {
+        val result = if (true) "True" else "False"
+    }
+
+    @Test
+    fun testStringInterpolation() {
+        val value = "World"
+        val oneLineString = "Hello $value"
+        val multiLineString = """
+            {
+                "message": "$oneLineString",
+                "length": ${oneLineString.length}
+            }
+        """.trimIndent()
+
+        assertThat(oneLineString, equalTo("Hello World"))
+        assertThat(multiLineString, containsSubstring("\"message\": \"Hello World\""))
     }
 
     @Test
@@ -168,6 +190,8 @@ class LanguageExamplesTest {
             else -> enteredAddress
         }
         assertThat(displayTitle, equalTo("Slottet"))
+
+        val addressForStorage3 = enteredAddress ?: "Karl Johan 1, Oslo, Norway"
     }
 
     enum class Role { ADMIN_ROLE }
@@ -199,7 +223,6 @@ class LanguageExamplesTest {
             // Status 422
             // Convert to JSON
         }
-
 
     }
 }
