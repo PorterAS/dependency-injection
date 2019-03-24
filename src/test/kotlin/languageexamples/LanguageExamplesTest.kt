@@ -3,7 +3,7 @@ package languageexamples
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.containsSubstring
 import com.natpryce.hamkrest.equalTo
-import io.vavr.control.Option
+import com.natpryce.hamkrest.isNullOrBlank
 import io.vavr.control.Try
 import io.vavr.control.Validation
 import io.vavr.kotlin.Try
@@ -32,7 +32,8 @@ class LanguageExamplesTest {
         val nullableValue: String? = null
         // val slice: String = nullableValue.slice(4..50) // Does not compile
         // val slice: String = nullableValue!!.slice(4..50) // RuntimeException
-        val nullSlice = nullableValue?.slice(4..50)
+        val nullSlice: String? = nullableValue?.slice(4..50)
+        assertThat(nullSlice, equalTo<String?>(null))
 
         val slice = value.slice(1..3) // Extension method to String from Kotlin
         assertThat(slice, equalTo("ell"))
@@ -101,6 +102,16 @@ class LanguageExamplesTest {
     }
 
     @Test
+    fun testDestructuring() {
+        val myPair = "Anders" to "Is present"
+        val (name, text) = myPair
+
+        assertThat(name, equalTo("Anders"))
+        assertThat(text, equalTo("Is present"))
+    }
+
+
+    @Test
     fun testExtensionFunctions() {
         fun <T> Iterable<T>.sumByLong(selector: (T) -> Long): Long {
             var sum = 0L
@@ -122,6 +133,15 @@ class LanguageExamplesTest {
 
         assertThat(totalGamesPlayed, equalTo(42L))
         assertThat(totalGamesPlayedWithOut, equalTo(42L))
+    }
+
+    @Test
+    fun testInfixFunctions() {
+        infix fun Int.plus(addition: Int): Int {
+            return this + addition
+        }
+
+        assertThat(1 plus 2, equalTo(3))
     }
 
     @Test
