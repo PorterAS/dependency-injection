@@ -3,7 +3,6 @@ package languageexamples
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.containsSubstring
 import com.natpryce.hamkrest.equalTo
-import com.natpryce.hamkrest.isNullOrBlank
 import io.vavr.control.Try
 import io.vavr.control.Validation
 import io.vavr.kotlin.Try
@@ -11,6 +10,7 @@ import io.vavr.kotlin.option
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import java.util.*
 
 /**
  * Examples for Kotlin for Java developers
@@ -23,48 +23,85 @@ class LanguageExamplesTest {
     data class Person(val name: String, val address: Address, val phoneNumber: String)
 
     @Test
-    fun testNullabilityValAndExtensionMethods() {
+    fun testNullabilityVal() {
         val value: String = "Hello"
         // value = "Hello2" // Does not compile
         var mutableValue = "Hello"
-        mutableValue = "Hello2" // Var so mutable
+        mutableValue = "Hello2" // Var, so mutable
 
         val nullableValue: String? = null
         // val slice: String = nullableValue.slice(4..50) // Does not compile
         // val slice: String = nullableValue!!.slice(4..50) // RuntimeException
         val nullSlice: String? = nullableValue?.slice(4..50)
         assertThat(nullSlice, equalTo<String?>(null))
+    }
 
-        val slice = value.slice(1..3) // Extension method to String from Kotlin
-        assertThat(slice, equalTo("ell"))
+    private fun exampleMethodSimple(myString: String = "stupidstring"): String {
+        return myString.toUpperCase()
+    }
+
+    private fun exampleMethod(myString: String, processor: (input: String) -> String = String::toUpperCase): String {
+        // Do something before
+        return processor(myString)
+        // Do something after?
+    }
+
+    private fun exampleMethod2(myString: String, processor: (input: String) -> String =
+            {
+                it.toUpperCase()
+            }
+    ): String {
+        // Do something before
+        return processor(myString)
+        // Do something after?
     }
 
     @Test
-    fun testOneLineIf() {
-        val result = if (true) "True" else "False"
+    fun testMethodDefinition() {
+        val testString = "ThisIsAMixedCaseString"
+
+        assertThat(exampleMethodSimple(testString), equalTo("THISISAMIXEDCASESTRING"))
+
+        assertThat(exampleMethod(testString), equalTo("THISISAMIXEDCASESTRING"))
+
+        val resultWithFunction = exampleMethod(testString, { it.toLowerCase() })
+        assertThat(resultWithFunction, equalTo("thisisamixedcasestring"))
+
+        val resultWithFunctionLast = exampleMethod(testString) { it.toLowerCase() }
+        assertThat(resultWithFunctionLast, equalTo("thisisamixedcasestring"))
     }
 
     @Test
     fun testStringInterpolation() {
         val value = "World"
         val oneLineString = "Hello $value"
+        assertThat(oneLineString, equalTo("Hello World"))
+
         val multiLineString = """
             {
                 "message": "$oneLineString",
-                "length": ${oneLineString.length}
+                "length": ${oneLineString.length},
+                "long":
+                "${if (oneLineString.length > 100) "true" else "false"}"
             }
         """.trimIndent()
-
-        assertThat(oneLineString, equalTo("Hello World"))
-        assertThat(multiLineString, containsSubstring("\"message\": \"Hello World\""))
+        assertThat(multiLineString,
+                containsSubstring(""" "message": "Hello World" """.trim())
+        )
     }
 
     @Test
     fun testCollectionMethods() {
         val myList = listOf("one", "two", "three")
 
-        assertThat(myList.filter { it.startsWith("t") }.size, equalTo(2))
-        assertThat(myList.first { listItem -> listItem.startsWith("t") }, equalTo("two"))
+        assertThat(
+                myList.filter { it.startsWith("t") }.size,
+                equalTo(2)
+        )
+        assertThat(
+                myList.first { listItem -> listItem.startsWith("t") },
+                equalTo("two")
+        )
 
         val myMap = mapOf<String, Long>(
                 "Hello" to 2L,
@@ -72,8 +109,54 @@ class LanguageExamplesTest {
         )
 
         assertThat(myMap["Yes"], equalTo(100L))
+
+        val myMapPair = mapOf<String, Long>(
+                Pair("Hello", 2L),
+                Pair("Yes", 100L)
+        )
+
+        assertThat(myMapPair["Yes"], equalTo(100L))
+
     }
 
+    @Test
+    fun testDestructuring() {
+        val myPair = "Anders" to "Is present"
+        val (name, text) = myPair
+
+        assertThat(name, equalTo("Anders"))
+        assertThat(text, equalTo("Is present"))
+    }
+
+    @Test
+    fun testOneLineIf() {
+        val result = if (true) "True" else "False"
+        assertThat(result, equalTo("True"))
+    }
+
+    @Test
+    fun testReturnValuesOfBlocks() {
+        val enteredAddress: String? = null
+
+        val addressForStorage = if (enteredAddress != null) {
+            enteredAddress
+        } else {
+            "Karl Johan 1, Oslo, Norway"
+        }
+        assertThat(addressForStorage, equalTo("Karl Johan 1, Oslo, Norway"))
+
+        val displayTitle = when (enteredAddress) {
+            "Stortinget" -> "Karl Johan 22, 0026 Oslo"
+            else -> "Karl Johan 1, Oslo, Norway"
+        }
+        assertThat(displayTitle, equalTo("Karl Johan 1, Oslo, Norway"))
+
+        val addressForStorage2 = enteredAddress.option().getOrElse { "Karl Johan 1, Oslo, Norway" }
+        assertThat(addressForStorage2, equalTo("Karl Johan 1, Oslo, Norway"))
+
+        val addressForStorage3 = enteredAddress ?: "Karl Johan 1, Oslo, Norway"
+        assertThat(addressForStorage3, equalTo("Karl Johan 1, Oslo, Norway"))
+    }
 
     @Test
     fun testDataClassesAndConstruction() {
@@ -100,16 +183,6 @@ class LanguageExamplesTest {
         assertFalse(me.address == someoneAtDifferentAddress.address) // Equality
         assertFalse(me.address === someoneAtDifferentAddress.address) // Memory equality
     }
-
-    @Test
-    fun testDestructuring() {
-        val myPair = "Anders" to "Is present"
-        val (name, text) = myPair
-
-        assertThat(name, equalTo("Anders"))
-        assertThat(text, equalTo("Is present"))
-    }
-
 
     @Test
     fun testExtensionFunctions() {
@@ -193,25 +266,41 @@ class LanguageExamplesTest {
     }
 
     @Test
-    fun testReturnValuesOfBlocks() {
-        val enteredAddress: String? = null
-
-        val addressForStorage = if (enteredAddress != null) {
-            enteredAddress
-        } else {
-            "Karl Johan 1, Oslo, Norway"
+    fun testTransaction() {
+        val result = inTransaction { transactionId ->
+            // Insert something you need with transactionId
+            1000L
         }
-        assertThat(addressForStorage, equalTo("Karl Johan 1, Oslo, Norway"))
 
-        val addressForStorage2 = enteredAddress.option().getOrElse { "Karl Johan 1, Oslo, Norway" }
+        assertThat(result, equalTo(1000L))
+    }
 
-        val displayTitle = when (addressForStorage) {
-            "Karl Johan 1, Oslo, Norway" -> "Slottet"
-            else -> enteredAddress
+    @Test
+    fun testSecureRequest() {
+        val request = ""
+        val response = ""
+
+        val result = secureRequest(request, response) {
+            1001L
         }
-        assertThat(displayTitle, equalTo("Slottet"))
+        assertThat(result, equalTo(1001L))
+    }
 
-        val addressForStorage3 = enteredAddress ?: "Karl Johan 1, Oslo, Norway"
+    fun <T> secureRequest(request: String, response: String, executionMethod: () -> T): T {
+        // Make sure user is logged in properly and has access to the resouce needed
+        return executionMethod()
+    }
+
+    fun <T> inTransaction(transactionOperation: (transactionId: UUID) -> T): T {
+        // Set up transaction and do what you need
+        val transactionId = UUID.randomUUID()
+        return try {
+            // Execute function and pass relevant information and objects
+            transactionOperation(transactionId)
+        } catch (e: Exception) {
+            // Clean up and close
+            throw java.lang.IllegalStateException("Something went wrong in your transaction")
+        }
     }
 
     enum class Role { ADMIN_ROLE }
