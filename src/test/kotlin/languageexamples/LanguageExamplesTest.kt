@@ -4,7 +4,6 @@ import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.containsSubstring
 import com.natpryce.hamkrest.equalTo
 import io.vavr.control.Try
-import io.vavr.control.Validation
 import io.vavr.kotlin.Try
 import io.vavr.kotlin.option
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -19,8 +18,23 @@ import java.util.*
  *
  */
 class LanguageExamplesTest {
-    data class Address(val streetName: String, val streetNumber: String, val postCode: String, val country: String)
-    data class Person(val name: String, val address: Address, val phoneNumber: String)
+    data class Person(
+            val name: String,
+            val address: Address,
+            val phoneNumber: String
+    ) {
+        companion object {} // Empty block to enable extensions in test
+
+        val livesInNorway by lazy { address.country == "Norway" }
+        val norwegianPhoneNumber: Boolean
+            get() = phoneNumber.startsWith("+47")
+    }
+    data class Address(
+            val streetName: String,
+            val streetNumber: String,
+            val postCode: String,
+            val country: String
+    )
 
     @Test
     fun testNullabilityVal() {
@@ -40,14 +54,18 @@ class LanguageExamplesTest {
         return myString.toUpperCase()
     }
 
-    private fun exampleMethod(myString: String, processor: (input: String) -> String = String::toUpperCase): String {
+    private fun exampleMethod(
+            myString: String,
+            processor: (input: String) -> String = String::toUpperCase
+    ): String {
         // Do something before
         return processor(myString)
         // Do something after?
     }
 
-    private fun exampleMethod2(myString: String, processor: (input: String) -> String =
-            {
+    private fun exampleMethod2(
+            myString: String,
+            processor: (input: String) -> String = {
                 it.toUpperCase()
             }
     ): String {
@@ -95,7 +113,11 @@ class LanguageExamplesTest {
         val myList = listOf("one", "two", "three")
 
         assertThat(
-                myList.filter { it.startsWith("t") }.size,
+                myList.filter({ it.startsWith("t") }).size,
+                equalTo(2)
+        )
+        assertThat(
+                myList.filter() { it.contains("o") }.size,
                 equalTo(2)
         )
         assertThat(
@@ -166,22 +188,47 @@ class LanguageExamplesTest {
                 "99999999"
         )
 
-        val someone = me.copy(name = "Someone Sveen")
-        val someoneAtDifferentAddress = someone.copy(
-                address = someone.address.copy(
+        val secondPerson = me.copy(name = "Someone Sveen", address = me.address.copy())
+        val secondPersonDifferentAddress = secondPerson.copy(
+                address = secondPerson.address.copy(
                         postCode = "1111"
                 )
         )
 
         assertThat(me.name, equalTo("Anders Sveen"))
-        assertThat(someone.name, equalTo("Someone Sveen"))
-        assertThat(someoneAtDifferentAddress.address.postCode, equalTo("1111"))
+        assertThat(secondPerson.name, equalTo("Someone Sveen"))
+        assertThat(secondPersonDifferentAddress.address.postCode, equalTo("1111"))
 
-        assertThat(me.address, equalTo(someone.address)) // Different objects, equals through data class
-        assertTrue(me.address == someone.address) // Equality
-        assertTrue(me.address === someone.address) // Memory equality
-        assertFalse(me.address == someoneAtDifferentAddress.address) // Equality
-        assertFalse(me.address === someoneAtDifferentAddress.address) // Memory equality
+        // Different objects, equals through data class
+        assertThat(me.address, equalTo(secondPerson.address))
+        // Equality, same as above
+        assertTrue(me.address == secondPerson.address)
+        // Object instance equality
+        assertFalse(me.address === secondPerson.address)
+        // Equality
+        assertFalse(me.address == secondPersonDifferentAddress.address)
+    }
+
+    @Test
+    fun testShowObjectMotherWithDataClass() {
+        fun Person.Companion.valid(): Person {
+            return Person(
+                    "Anders Sveen",
+                    Address("Mystreet", "64", "0547", "Norway"),
+                    "99999999"
+            )
+        }
+
+        fun Person.emptyAddress(): Person {
+            return this.copy(address = Address("", "", "", ""))
+        }
+
+        val testPerson = Person.valid().let {
+            it.copy(address = it.address.copy(country = "Sweden"))
+        }
+
+        assertThat(testPerson.livesInNorway, equalTo(false))
+        assertThat(testPerson.emptyAddress().address.streetName, equalTo(""))
     }
 
     @Test
@@ -221,7 +268,6 @@ class LanguageExamplesTest {
     fun testTransforms() {
         data class FamilyStatus(val name: String, val children: Int)
 
-        val myNumber: Int = "1234".let { it.toInt() }
         val myList = listOf(
                 FamilyStatus("John", 3),
                 FamilyStatus("Sam", 7),
@@ -233,7 +279,9 @@ class LanguageExamplesTest {
         )
         assertThat(myList.single { it.children > 5 }, equalTo(FamilyStatus("Sam", 7)))
 
-        val myMapOfNamesAndJustNumbers: Map<String, Int> = myList.map { it.name to it.children }.toMap()
+        val myMapOfNamesAndJustNumbers: Map<String, Int> = myList
+                .map { it.name to it.children }
+                .toMap()
         val myListOfJustNames: List<String> = myList.map { it.name }
 
         val myMapOfNames: Map<String, FamilyStatus> = myList.associateBy { it.name }
@@ -275,22 +323,6 @@ class LanguageExamplesTest {
         assertThat(result, equalTo(1000L))
     }
 
-    @Test
-    fun testSecureRequest() {
-        val request = ""
-        val response = ""
-
-        val result = secureRequest(request, response) {
-            1001L
-        }
-        assertThat(result, equalTo(1001L))
-    }
-
-    fun <T> secureRequest(request: String, response: String, executionMethod: () -> T): T {
-        // Make sure user is logged in properly and has access to the resouce needed
-        return executionMethod()
-    }
-
     fun <T> inTransaction(transactionOperation: (transactionId: UUID) -> T): T {
         // Set up transaction and do what you need
         val transactionId = UUID.randomUUID()
@@ -303,36 +335,5 @@ class LanguageExamplesTest {
         }
     }
 
-    enum class Role { ADMIN_ROLE }
-    data class ValidationError(val message: String, val path: String)
-
-    @Test
-    fun testValidationsChaining() {
-        val username = "fullaccess"
-        val accessNames = listOf(Role.ADMIN_ROLE)
-
-        // First assign role to user
-        val creationResult = if (username == "fullaccess") {
-            Validation.valid<ValidationError, Role>(Role.ADMIN_ROLE)
-        } else {
-            Validation.invalid(ValidationError("No access", "user"))
-        }.flatMap { role ->
-            if (accessNames.contains(role)) {
-                // val newId = orderService.createNew(json)
-                Validation.valid<ValidationError, String>("newStoredId")
-            } else {
-                Validation.invalid(ValidationError("Not allowed", "user.role"))
-            }
-        }
-
-        creationResult.map {
-            // Status 200
-            // Convert to JSON
-        }.mapError {
-            // Status 422
-            // Convert to JSON
-        }
-
-    }
 }
 

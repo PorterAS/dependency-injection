@@ -27,7 +27,9 @@ fun testCaseSetup(setupFunction: TestSetup.() -> Unit): TestSetup {
 class TestSetup {
     lateinit var time: String
 
-    infix fun whenCustomerAsksForDeliveryTimesBetweenAddresses(function: TestRequestInfo.() -> Unit): TestRequestInfo {
+    infix fun whenCustomerAsksForDeliveryTimesBetweenAddresses(
+            function: TestRequestInfo.() -> Unit
+    ): TestRequestInfo {
         return TestRequestInfo(this).apply(function)
     }
 
