@@ -29,6 +29,7 @@ class LanguageExamplesTest {
         val norwegianPhoneNumber: Boolean
             get() = phoneNumber.startsWith("+47")
     }
+
     data class Address(
             val streetName: String,
             val streetNumber: String,
@@ -79,13 +80,15 @@ class LanguageExamplesTest {
         val testString = "ThisIsAMixedCaseString"
 
         assertThat(exampleMethodSimple(testString), equalTo("THISISAMIXEDCASESTRING"))
-
         assertThat(exampleMethod(testString), equalTo("THISISAMIXEDCASESTRING"))
+        assertThat(exampleMethod(
+                testString,
+                { it.toLowerCase() }
+        ), equalTo("thisisamixedcasestring"))
 
-        val resultWithFunction = exampleMethod(testString, { it.toLowerCase() })
-        assertThat(resultWithFunction, equalTo("thisisamixedcasestring"))
-
-        val resultWithFunctionLast = exampleMethod(testString) { it.toLowerCase() }
+        val resultWithFunctionLast = exampleMethod(testString) { conversionString ->
+            conversionString.toLowerCase()
+        }
         assertThat(resultWithFunctionLast, equalTo("thisisamixedcasestring"))
     }
 
