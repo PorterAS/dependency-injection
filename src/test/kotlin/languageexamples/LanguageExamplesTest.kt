@@ -130,14 +130,16 @@ class LanguageExamplesTest {
 
         val myMap = mapOf<String, Long>(
                 "Hello" to 2L,
-                "Yes" to 100L
+                "Yes" to 100L,
+                "No" to 1000L
         )
 
         assertThat(myMap["Yes"], equalTo(100L))
 
         val myMapPair = mapOf<String, Long>(
-                Pair("Hello", 2L),
-                Pair("Yes", 100L)
+                "Hello" to 2L,
+                "Yes".to(100L),
+                Pair("No", 1000L)
         )
 
         assertThat(myMapPair["Yes"], equalTo(100L))
