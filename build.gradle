@@ -34,9 +34,9 @@ compileTestKotlin {
 }
 
 shadowJar {
-    baseName = "di-app"
-    classifier = null
-    version = null
+    archiveBaseName = "di-app"
+    archiveClassifier = null
+    archiveVersion = null
 }
 
 test {
