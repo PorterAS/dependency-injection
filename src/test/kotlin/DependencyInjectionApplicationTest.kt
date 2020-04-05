@@ -21,7 +21,7 @@ class DependencyInjectionApplicationTest {
         @BeforeAll
         @JvmStatic
         fun setupServer() {
-            app = DependencyInjectionApplicationContext(loadConfig(true)).create()
+            app = DependencyInjectionApplicationContext(loadConfig()).create()
             serverUrl = app.start()
         }
 

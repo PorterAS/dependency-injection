@@ -1,4 +1,13 @@
-import spark.Service
+import io.ktor.application.call
+import io.ktor.application.install
+import io.ktor.features.*
+import io.ktor.jackson.jackson
+import io.ktor.response.respond
+import io.ktor.routing.get
+import io.ktor.routing.routing
+import io.ktor.server.engine.ApplicationEngine
+import io.ktor.server.engine.embeddedServer
+import io.ktor.server.netty.Netty
 import java.io.FileInputStream
 import java.io.FileNotFoundException
 import java.util.*
@@ -53,32 +62,38 @@ class DependencyInjectionApplicationContext(
  */
 class DependencyInjectionApplication(private val port: Int, private val businessService: BusinessService) {
 
-    private val sparkServer = Service.ignite()!!
-
-    fun start(): String {
-        with(sparkServer) {
-            port(port)
-
-            get("*") { _, _ -> businessService.getData("id") }
-
-            awaitInitialization()
+    private val server: ApplicationEngine = embeddedServer(Netty, port = port) {
+        install(DefaultHeaders)
+        install(Compression)
+        install(ContentNegotiation) {
+            jackson {}
         }
 
-        return "http://localhost:${sparkServer.port()}"
+        routing {
+            get {
+                this.call.respond(businessService.getData("id"))
+            }
+        }
+    }
+
+
+    fun start(): String {
+        server.start()
+        return "http://localhost:${port}"
     }
 
     fun stop() {
-        sparkServer.stop()
+        server.stop(1000, 5000)
     }
 
 }
 
 
-fun loadConfig(randomPort: Boolean = false): DependencyInjectionApplicationConfig {
+fun loadConfig(): DependencyInjectionApplicationConfig {
     val properties = loadRuntimeProperties()
 
     return DependencyInjectionApplicationConfig(
-            if (randomPort) 0 else requiredEnv(properties, "PORT", "5000").toInt(),
+            requiredEnv(properties, "PORT", "5000").toInt(),
             requiredEnv(properties, "DATABASE_URL"),
             env(properties, "DATABASE_USER")
     )

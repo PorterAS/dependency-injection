@@ -20,7 +20,7 @@ class DependencyInjectionStubbedApplicationTest {
         @JvmStatic
         fun setupServer() {
             app = DependencyInjectionApplicationContext(
-                    loadConfig(true),
+                    loadConfig(),
                     businessRepository = BusinessRepositoryStub()
             ).create()
             serverUrl = app.start()
