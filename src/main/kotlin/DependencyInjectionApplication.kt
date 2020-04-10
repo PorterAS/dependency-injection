@@ -1,8 +1,11 @@
 import io.ktor.application.call
 import io.ktor.application.install
-import io.ktor.features.*
+import io.ktor.features.Compression
+import io.ktor.features.ContentNegotiation
+import io.ktor.features.DefaultHeaders
 import io.ktor.jackson.jackson
 import io.ktor.response.respond
+import io.ktor.response.respondOutputStream
 import io.ktor.routing.get
 import io.ktor.routing.routing
 import io.ktor.server.engine.ApplicationEngine
@@ -73,6 +76,12 @@ class DependencyInjectionApplication(private val port: Int, private val business
             get {
                 this.call.respond(businessService.getData("id"))
             }
+
+            get("list") {
+                this.call.respondOutputStream {
+
+                }
+            }
         }
     }
 
@@ -107,11 +116,15 @@ fun requiredEnv(properties: Properties?, name: String, defaultValue: String? = n
 }
 
 fun env(properties: Properties?, name: String, defaultValue: String? = null): String? {
-    return if (System.getenv(name) != null) {
-        System.getenv(name)
-    } else if (properties?.getProperty(propertyName(name)) != null) {
-        properties.getProperty(propertyName(name))
-    } else defaultValue
+    return when {
+        System.getenv(name) != null -> {
+            System.getenv(name)
+        }
+        properties?.getProperty(propertyName(name)) != null -> {
+            properties.getProperty(propertyName(name))
+        }
+        else -> defaultValue
+    }
 }
 
 fun loadRuntimeProperties(): Properties? {
