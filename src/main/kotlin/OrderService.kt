@@ -1,11 +1,10 @@
 import java.time.LocalDate
 import java.time.Period
 import java.util.*
-import kotlin.collections.HashMap
 
 interface OrderService {
 
-    fun getOrder(identifier: UUID): String
+    fun getOrder(identifier: UUID): Order
     fun addOrder(order: Order)
     fun getAverageOrders(from: LocalDate, to: LocalDate): Double
 
@@ -21,7 +20,7 @@ class OrderServiceImpl(private val orderRepository: OrderRepository) : OrderServ
         orderRepository.addOrder(order)
     }
 
-    override fun getOrder(identifier: UUID): String {
+    override fun getOrder(identifier: UUID): Order {
         return orderRepository.getOrder(identifier)
     }
 

@@ -4,8 +4,8 @@ import java.util.*
 class OrderRepositoryStub : OrderRepository {
     private val db = mutableMapOf<UUID, Order>()
 
-    override fun getOrder(identifier: UUID): String {
-        return "Hello World Stubbed!"
+    override fun getOrder(identifier: UUID): Order {
+        return db[identifier]!!
     }
 
     override fun addOrder(order: Order) {

@@ -1,7 +1,7 @@
 import com.mashape.unirest.http.Unirest
-import org.hamcrest.MatcherAssert.assertThat
-import org.hamcrest.Matchers.equalTo
-import org.hamcrest.core.Is
+import com.natpryce.hamkrest.assertion.assertThat
+import com.natpryce.hamkrest.containsSubstring
+import com.natpryce.hamkrest.equalTo
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -34,8 +34,8 @@ class DependencyInjectionApplicationTest {
 
     @Test
     fun testThatTheApplicationIsAcceptingRequestsAtTheBaseUrl() {
-        val response = Unirest.get(serverUrl).asString()
-        assertThat(response.body, Is(equalTo("Hello World!")))
+        val response = Unirest.get("$serverUrl/helloworld").asString()
+        assertThat(response.body, equalTo("Hello world"))
     }
 
 }

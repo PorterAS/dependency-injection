@@ -35,8 +35,8 @@ class DependencyInjectionStubbedApplicationTest {
 
     @Test
     fun testThatTheApplicationIsAcceptingRequestsAtTheBaseUrl() {
-        val response = Unirest.get(serverUrl).asString()
-        assertThat(response.body, Is(equalTo("Hello World Stubbed!")))
+        val response = Unirest.get("$serverUrl/helloworld").asString()
+        assertThat(response.body, Is(equalTo("Hello world")))
     }
 
 }

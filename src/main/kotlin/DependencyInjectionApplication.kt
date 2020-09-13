@@ -92,6 +92,10 @@ class DependencyInjectionApplication(private val port: Int, private val orderSer
                 this.call.respond(orderService.getOrder(UUID.randomUUID()))
             }
 
+            get ("helloworld") {
+                this.call.respond("Hello world")
+            }
+
             get("list") {
                 this.call.respondOutputStream {
 

@@ -2,14 +2,14 @@ import java.time.LocalDate
 import java.util.*
 
 interface OrderRepository {
-    fun getOrder(identifier: UUID): String
+    fun getOrder(identifier: UUID): Order
     fun addOrder(order: Order)
     fun listOrders(from: LocalDate, to: LocalDate): List<Order>
 }
 
 class OrderRepositoryImpl : OrderRepository {
-    override fun getOrder(identifier: UUID): String {
-        return "Hello World!"
+    override fun getOrder(identifier: UUID): Order {
+        TODO("Not yet implemented")
     }
 
     override fun addOrder(order: Order) {
