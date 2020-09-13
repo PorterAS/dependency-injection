@@ -1,7 +1,8 @@
 SET search_path TO :app_schema;
 
 CREATE TABLE orders (
-    id          text PRIMARY KEY,
+    id          uuid PRIMARY KEY,
     date        timestamptz NOT NULL,
-    deviations  jsonb NOT NULL
+    comment     text,
+    deviations  jsonb
 );

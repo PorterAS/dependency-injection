@@ -21,7 +21,7 @@ class DependencyInjectionStubbedApplicationTest {
         fun setupServer() {
             app = DependencyInjectionApplicationContext(
                     loadConfig(),
-                    businessRepository = BusinessRepositoryStub()
+                    orderRepository = OrderRepositoryStub()
             ).create()
             serverUrl = app.start()
         }

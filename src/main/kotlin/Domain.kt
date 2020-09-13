@@ -1,8 +1,14 @@
 import java.time.LocalDate
+import java.util.*
 
 data class Deviation(val description: String)
 
-data class Order(val id: String, val date: LocalDate, val deviations: List<Deviation>) {
+data class Order(
+        val id: UUID? = null,
+        val date: LocalDate,
+        val comment: String,
+        val deviations: List<Deviation> = emptyList()
+) {
     companion object
 
     fun canBeApproved(): Boolean {
