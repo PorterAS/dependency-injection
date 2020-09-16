@@ -1,7 +1,6 @@
 import com.fasterxml.jackson.core.JsonFactory
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.core.JsonParser
-import com.fasterxml.jackson.core.ObjectCodec
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
@@ -136,7 +135,7 @@ class DependencyInjectionApplication(private val port: Int, private val jdbi: Jd
                     jdbi.open().use { handle ->
                         jdbi.transactionHandler.begin(handle)
                         try {
-                            orderService.getOrders(handle, LocalDate.now(), LocalDate.now()).use { orderStream ->
+                            orderService.listOrders(handle, LocalDate.now(), LocalDate.now()).use { orderStream ->
                                 factory.createGenerator(this).let { jsonGenerator ->
                                     jsonGenerator.writeStartArray()
                                     orderStream.forEach { order ->

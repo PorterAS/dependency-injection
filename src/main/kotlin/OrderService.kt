@@ -25,7 +25,7 @@ class OrderService(
         return orderRepository.getOrder(identifier)
     }
 
-    fun getOrders(handle: Handle, from: LocalDate, to: LocalDate): Stream<Order> {
+    fun listOrders(handle: Handle, from: LocalDate, to: LocalDate): Stream<Order> {
         return orderRepository.listOrders(handle, from, to)
     }
 
