@@ -9,6 +9,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.zaxxer.hikari.HikariDataSource
 import io.ktor.application.*
 import io.ktor.features.*
+import io.ktor.http.*
 import io.ktor.jackson.*
 import io.ktor.response.*
 import io.ktor.routing.*
@@ -120,7 +121,7 @@ class DependencyInjectionApplication(private val port: Int, private val jdbi: Jd
             }
 
             get("order/list") {
-                this.call.respondOutputStream {
+                this.call.respondOutputStream(ContentType.parse("application/json")) {
                     // We would normally use jdbi.useTransaction { ... } here. But since KTor is async
                     // and JDBI doesn't have a async function API we manually handle the transaction. For reads
                     // it is normally not important, but it makes JDBI set autoCommit=false on the connection
