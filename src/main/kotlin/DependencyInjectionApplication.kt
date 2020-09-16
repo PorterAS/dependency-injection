@@ -66,7 +66,7 @@ class DependencyInjectionApplicationContext(
         jdbi.installPlugin(PostgresPlugin())
 
         // Create any services and put inject any repositories
-        val businessService = OrderService(orderRepository ?: OrderRepositoryImpl())
+        val businessService = OrderService(orderRepository ?: OrderRepositoryImpl(jdbi))
 
         // Create the main application and inject whatever you've created above.
         return DependencyInjectionApplication(

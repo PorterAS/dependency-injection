@@ -40,4 +40,9 @@ class DependencyInjectionApplicationTest {
         assertThat(response.body, equalTo("Hello world"))
     }
 
+    @Test
+    fun testThatOrderCanBeFetched() {
+        val orderId = orderRepo.addOrder(Order.validOrder().copy(comment = "ApplicationTestOrder"))
+        assertThat(Unirest.get("$serverUrl/order/$orderId").asString().body, containsSubstring("ApplicationTestOrder"))
+    }
 }
