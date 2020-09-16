@@ -2,6 +2,7 @@ import com.mashape.unirest.http.Unirest
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.containsSubstring
 import com.natpryce.hamkrest.equalTo
+import com.natpryce.hamkrest.startsWith
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -44,5 +45,14 @@ class DependencyInjectionApplicationTest {
     fun testThatOrderCanBeFetched() {
         val orderId = orderRepo.addOrder(Order.validOrder().copy(comment = "ApplicationTestOrder"))
         assertThat(Unirest.get("$serverUrl/order/$orderId").asString().body, containsSubstring("ApplicationTestOrder"))
+    }
+
+    @Test
+    fun testThatAllOrdersCanBeFetched() {
+        // This is a pretty weak test, but tests that the endpoint responds. :)
+        val orderId = orderRepo.addOrder(Order.validOrder().copy(comment = "ApplicationTestOrder"))
+        val fetchedBody = Unirest.get("$serverUrl/order/list").asString().body
+        assertThat(fetchedBody, containsSubstring(orderId.toString()))
+        assertThat(fetchedBody, startsWith("["))
     }
 }

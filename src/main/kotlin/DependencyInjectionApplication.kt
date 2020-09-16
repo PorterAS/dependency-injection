@@ -1,6 +1,12 @@
+import com.fasterxml.jackson.core.JsonFactory
+import com.fasterxml.jackson.core.JsonGenerator
+import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.core.ObjectCodec
 import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.zaxxer.hikari.HikariDataSource
 import io.ktor.application.*
 import io.ktor.features.*
@@ -15,6 +21,7 @@ import org.jdbi.v3.postgres.PostgresPlugin
 import org.slf4j.LoggerFactory
 import java.io.FileInputStream
 import java.io.FileNotFoundException
+import java.time.LocalDate
 import java.util.*
 import kotlin.system.exitProcess
 
@@ -71,6 +78,7 @@ class DependencyInjectionApplicationContext(
         // Create the main application and inject whatever you've created above.
         return DependencyInjectionApplication(
                 configuration.port,
+                jdbi,
                 businessService
         )
     }
@@ -81,20 +89,25 @@ class DependencyInjectionApplicationContext(
  * The main application. Try to keep any wiring / startup logic out of this. If/Else at the top level should only be
  * related to business decisons.
  */
-class DependencyInjectionApplication(private val port: Int, private val orderService: OrderService) {
+class DependencyInjectionApplication(private val port: Int, private val jdbi: Jdbi, private val orderService: OrderService) {
 
     val orderRepository by orderService::orderRepository
 
+    // This is kind of duplicate and not same mapper as KTor will use internally, but we are ensuring same config via the extension method
+    private val jacksonMapper = jacksonObjectMapper().configureJackson()
+    private val factory = JsonFactory(jacksonMapper).also { jsonFactory ->
+        // Streams are managed by KTor and JDBI, we don't want Jackson to close those
+        jsonFactory.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false)
+        jsonFactory.configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, false)
+    }
+
     private val server: ApplicationEngine = embeddedServer(Netty, port = port) {
         // Warning: This example does not contain authentication and authorization.
-
         install(DefaultHeaders)
         install(Compression)
         install(ContentNegotiation) {
             jackson {
-                registerModule(JavaTimeModule())
-                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                configureJackson()
             }
         }
 
@@ -109,10 +122,48 @@ class DependencyInjectionApplication(private val port: Int, private val orderSer
 
             get("order/list") {
                 this.call.respondOutputStream {
-
+                    // We would normally use jdbi.useTransaction { ... } here. But since KTor is async
+                    // and JDBI doesn't have a async function API we manually handle the transaction. For reads
+                    // it is normally not important, but it makes JDBI set autoCommit=false on the connection
+                    // which is a requirement to get streaming.
+                    //
+                    // The following code is ripe for separating out into helper methods, and we have done
+                    // so in our code. Our code for handling streams looks very much like a normal response handling.
+                    // I keep it inline here to make it clear what is done.
+                    //
+                    // JDBI session (and transaction) has to stay open until the last element has been written to
+                    // the stream, and closed appropriately. This is close to the open session in view pattern.
+                    jdbi.open().use { handle ->
+                        jdbi.transactionHandler.begin(handle)
+                        try {
+                            orderService.getOrders(handle, LocalDate.now(), LocalDate.now()).use { orderStream ->
+                                factory.createGenerator(this).let { jsonGenerator ->
+                                    jsonGenerator.writeStartArray()
+                                    orderStream.forEach { order ->
+                                        jacksonMapper.writeValue(jsonGenerator, order)
+                                    }
+                                    jsonGenerator.writeEndArray()
+                                    // Avoiding using .use { ... } on the generator as it created bad results in some error situations.
+                                    // The underlying outputstream is managed by KTor and will be closed there. YMMV.
+                                    jsonGenerator.flush()
+                                    jsonGenerator.close()
+                                }
+                            }
+                            jdbi.transactionHandler.commit(handle)
+                        } catch (e: Exception) {
+                            jdbi.transactionHandler.rollback(handle)
+                        }
+                    }
                 }
             }
         }
+    }
+
+    private fun ObjectMapper.configureJackson(): ObjectMapper {
+        registerModule(JavaTimeModule())
+        configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+        return this
     }
 
 

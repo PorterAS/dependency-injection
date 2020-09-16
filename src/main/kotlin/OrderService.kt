@@ -1,6 +1,11 @@
+import org.jdbi.v3.core.Handle
+import org.jdbi.v3.core.Jdbi
+import java.lang.RuntimeException
 import java.time.LocalDate
 import java.time.Period
 import java.util.*
+import java.util.stream.Stream
+import kotlin.streams.toList
 
 class OrderService(
         // This is made public for testing. Generally not wanted, but we don't enforce usage of this programatically. In our view it just creates too much complexity vs the value.
@@ -18,6 +23,10 @@ class OrderService(
 
     fun getOrder(identifier: UUID): Order {
         return orderRepository.getOrder(identifier)
+    }
+
+    fun getOrders(handle: Handle, from: LocalDate, to: LocalDate): Stream<Order> {
+        return orderRepository.listOrders(handle, from, to)
     }
 
 }
