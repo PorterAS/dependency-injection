@@ -1,7 +1,7 @@
 import com.mashape.unirest.http.Unirest
-import org.hamcrest.MatcherAssert.assertThat
-import org.hamcrest.Matchers.equalTo
-import org.hamcrest.core.Is
+import com.natpryce.hamkrest.assertion.assertThat
+import com.natpryce.hamkrest.containsSubstring
+import com.natpryce.hamkrest.equalTo
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -15,13 +15,14 @@ class DependencyInjectionStubbedApplicationTest {
     companion object {
         private lateinit var serverUrl: String
         private lateinit var app: DependencyInjectionApplication
+        private val orderRepo = OrderRepositoryStub()
 
         @BeforeAll
         @JvmStatic
         fun setupServer() {
             app = DependencyInjectionApplicationContext(
                     loadConfig(),
-                    orderRepository = OrderRepositoryStub()
+                    orderRepository = orderRepo
             ).create()
             serverUrl = app.start()
         }
@@ -34,9 +35,15 @@ class DependencyInjectionStubbedApplicationTest {
     }
 
     @Test
-    fun testThatTheApplicationIsAcceptingRequestsAtTheBaseUrl() {
+    fun testThatTheApplicationIsAcceptingRequestsAtHelloWorld() {
         val response = Unirest.get("$serverUrl/helloworld").asString()
-        assertThat(response.body, Is(equalTo("Hello world")))
+        assertThat(response.body, equalTo("Hello world"))
+    }
+
+    @Test
+    fun testThatOrderCanBeFetched() {
+        val orderId = orderRepo.addOrder(Order.validOrder().copy(comment = "ApplicationTestOrder"))
+        assertThat(Unirest.get("$serverUrl/order/$orderId").asString().body, containsSubstring("ApplicationTestOrder"))
     }
 
 }

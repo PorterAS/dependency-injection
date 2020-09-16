@@ -1,3 +1,6 @@
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.zaxxer.hikari.HikariDataSource
 import io.ktor.application.*
 import io.ktor.features.*
@@ -63,7 +66,7 @@ class DependencyInjectionApplicationContext(
         jdbi.installPlugin(PostgresPlugin())
 
         // Create any services and put inject any repositories
-        val businessService = OrderServiceImpl(orderRepository ?: OrderRepositoryImpl())
+        val businessService = OrderService(orderRepository ?: OrderRepositoryImpl())
 
         // Create the main application and inject whatever you've created above.
         return DependencyInjectionApplication(
@@ -80,23 +83,31 @@ class DependencyInjectionApplicationContext(
  */
 class DependencyInjectionApplication(private val port: Int, private val orderService: OrderService) {
 
+    val orderRepository by orderService::orderRepository
+
     private val server: ApplicationEngine = embeddedServer(Netty, port = port) {
+        // Warning: This example does not contain authentication and authorization.
+
         install(DefaultHeaders)
         install(Compression)
         install(ContentNegotiation) {
-            jackson {}
+            jackson {
+                registerModule(JavaTimeModule())
+                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+            }
         }
 
         routing {
-            get {
-                this.call.respond(orderService.getOrder(UUID.randomUUID()))
-            }
-
-            get ("helloworld") {
+            get("helloworld") {
                 this.call.respond("Hello world")
             }
 
-            get("list") {
+            get("order/{orderId}") {
+                this.call.respond(orderService.getOrder(UUID.fromString(call.parameters["orderId"]!!)))
+            }
+
+            get("order/list") {
                 this.call.respondOutputStream {
 
                 }

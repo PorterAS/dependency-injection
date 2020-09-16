@@ -7,7 +7,7 @@ class OrderServiceTest {
 
     @Test
     fun testShouldCalculateAverage() {
-        val service = OrderServiceImpl(OrderRepositoryStub())
+        val service = OrderService(OrderRepositoryStub())
 
         service.addOrder(Order(comment = "Test", date = LocalDate.of(2018, 1, 1)))
 

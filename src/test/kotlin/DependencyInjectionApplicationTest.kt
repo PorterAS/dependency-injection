@@ -17,11 +17,13 @@ class DependencyInjectionApplicationTest {
     companion object {
         private lateinit var serverUrl: String
         private lateinit var app: DependencyInjectionApplication
+        private lateinit var orderRepo: OrderRepository
 
         @BeforeAll
         @JvmStatic
         fun setupServer() {
             app = DependencyInjectionApplicationContext(loadConfig()).create()
+            orderRepo = app.orderRepository
             serverUrl = app.start()
         }
 
@@ -33,7 +35,7 @@ class DependencyInjectionApplicationTest {
     }
 
     @Test
-    fun testThatTheApplicationIsAcceptingRequestsAtTheBaseUrl() {
+    fun testThatTheApplicationIsAcceptingRequestsAtHelloWorld() {
         val response = Unirest.get("$serverUrl/helloworld").asString()
         assertThat(response.body, equalTo("Hello world"))
     }

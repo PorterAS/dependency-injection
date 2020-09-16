@@ -8,8 +8,8 @@ class OrderRepositoryStub : OrderRepository {
         return db[identifier]!!
     }
 
-    override fun addOrder(order: Order) {
-        UUID.randomUUID().let {
+    override fun addOrder(order: Order): UUID {
+        return UUID.randomUUID().also {
             db[it] = order.copy(id = it)
         }
     }

@@ -3,7 +3,7 @@ import java.util.*
 
 interface OrderRepository {
     fun getOrder(identifier: UUID): Order
-    fun addOrder(order: Order)
+    fun addOrder(order: Order): UUID
     fun listOrders(from: LocalDate, to: LocalDate): List<Order>
 }
 
@@ -12,7 +12,7 @@ class OrderRepositoryImpl : OrderRepository {
         TODO("Not yet implemented")
     }
 
-    override fun addOrder(order: Order) {
+    override fun addOrder(order: Order): UUID {
         TODO("Not yet implemented")
     }
 
