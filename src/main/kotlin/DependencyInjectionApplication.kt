@@ -137,14 +137,16 @@ class DependencyInjectionApplication(private val port: Int, private val jdbi: Jd
                         jdbi.transactionHandler.begin(handle)
                         try {
                             orderService.listOrders(handle, LocalDate.now(), LocalDate.now()).use { orderStream ->
+                                // Avoiding using .use { ... } on the generator as it will close the underlying stream.
+                                // If an exception is thrown while writing, the stream is still needed for KTor to write the
+                                // error response back. So we leave the stream to be managed by KTor and will be
+                                // closed there.
                                 factory.createGenerator(this).let { jsonGenerator ->
                                     jsonGenerator.writeStartArray()
                                     orderStream.forEach { order ->
                                         jacksonMapper.writeValue(jsonGenerator, order)
                                     }
                                     jsonGenerator.writeEndArray()
-                                    // Avoiding using .use { ... } on the generator as it created bad results in some error situations.
-                                    // The underlying outputstream is managed by KTor and will be closed there. YMMV.
                                     jsonGenerator.flush()
                                     jsonGenerator.close()
                                 }
